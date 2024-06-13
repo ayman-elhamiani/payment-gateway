@@ -11,20 +11,18 @@ describe("MerchantManager", function () {
 
     beforeEach(async function () {
         [owner, addr1, addr2, addr3] = await ethers.getSigners();
-        tokens = [owner.address, addr1.address]; // Simulating token addresses for testing
+        tokens = [owner.address, addr1.address]; 
         MerchantManager = await ethers.getContractFactory("MerchantManager");
         merchantManager = await MerchantManager.deploy();
     });
 
     it("should allow a merchant to self-register and emit an event", async function () {
-        // addr1 registers themselves
         await expect(merchantManager.connect(addr1).registerMerchant(true, tokens))
             .to.emit(merchantManager, "MerchantRegistered")
             .withArgs(addr1.address, true);
     });
 
     it("should allow viewing registered merchant information", async function () {
-        // addr1 registers themselves
         await merchantManager.connect(addr1).registerMerchant(true, tokens);
         const info = await merchantManager.getMerchantInfo(addr1.address);
         expect(info.isRegistered).to.equal(true);
@@ -34,7 +32,6 @@ describe("MerchantManager", function () {
     });
 
     it("should accurately report the number of registered merchants", async function () {
-        // Each merchant registers themselves
         await merchantManager.connect(addr1).registerMerchant(true, []);
         await merchantManager.connect(addr2).registerMerchant(false, []);
         await merchantManager.connect(addr3).registerMerchant(false, []);
@@ -44,7 +41,7 @@ describe("MerchantManager", function () {
     });
 
     it("should prevent unauthorized actions", async function () {
-        // Attempting to register addr2 from addr1's account
+
         await expect(merchantManager.connect(addr1).registerMerchant(true, tokens))
             .to.emit(merchantManager, "MerchantRegistered")
             .withArgs(addr1.address, true);
@@ -53,7 +50,6 @@ describe("MerchantManager", function () {
     });
 
     it("should prevent duplicate registrations of the same merchant", async function () {
-        // addr1 tries to register twice
         await merchantManager.connect(addr1).registerMerchant(true, []);
         await expect(merchantManager.connect(addr1).registerMerchant(true, []))
             .to.be.revertedWith("Merchant already registered.");
